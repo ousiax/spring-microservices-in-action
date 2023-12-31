@@ -20,4 +20,8 @@
 		<java.version>21</java.version>
 	</properties>
 
+	<modules>
+		<module>licensing-service</module>
+	</modules>
+
 </project>
