@@ -9,7 +9,7 @@
 		<!-- <relativePath /> lookup parent from repository -->
 	</parent>
 	<artifactId>organization-service</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.3-SNAPSHOT</version>
 	<name>Organization Service</name>
 	<description>Ostock Organization Service</description>
 	<properties>
