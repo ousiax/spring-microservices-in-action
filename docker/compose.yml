@@ -1,0 +1,112 @@
+version: '2.4'
+services:
+  database:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "ostock_dev"
+    # volumes:
+    #     - ./init.sql:/docker-entrypoint-initdb.d/1-init.sql
+    #     - ./data.sql:/docker-entrypoint-initdb.d/2-data.sql      
+    networks:
+      backend:
+        aliases:
+          - "database"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  configserver:
+    image: ostock/configserver:0.0.1-SNAPSHOT
+    ports:
+       - "8071:8071"
+    environment:
+      ENCRYPT_KEY: "fje83Ki8403Iod87dne7Yjsl3THueh48jfuO9j4U2hf64Lo"
+    networks:
+      backend:
+        aliases:
+          - "configserver"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8071/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  eurekaserver:
+    image: ostock/eurekaserver:0.0.1-SNAPSHOT
+    ports:
+       - "8070:8070"
+    environment:
+      EUREKA_INSTANCE_HOSTNAME: eurekaserver
+      SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
+    depends_on:
+      configserver:
+        condition: service_healthy
+    networks:
+      backend:
+        aliases:
+          - "eurekaserver"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8070/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  licensingservice:
+    image: ostock/licensing-service:0.0.7-SNAPSHOT
+    environment:
+      SPRING_PROFILES_ACTIVE: "dev"
+      SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka/"
+      ENCRYPT_KEY: "IMSYMMETRIC"
+    depends_on:
+      database:
+        condition: service_healthy
+      configserver:
+        condition: service_healthy
+      eurekaserver:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      backend:
+        aliases:
+          - "licensing-service"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  organizationservice:
+    image: ostock/organization-service:0.0.1-SNAPSHOT
+    environment:
+      SPRING_PROFILES_ACTIVE: "dev"
+      SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka/"
+      ENCRYPT_KEY: "IMSYMMETRIC"
+    depends_on:
+      database:
+        condition: service_healthy
+      configserver:
+        condition: service_started
+      eurekaserver:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    networks:
+      backend:
+        aliases:
+          - "organization-service"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  backend:
+    driver: bridge
