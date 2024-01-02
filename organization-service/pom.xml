@@ -9,7 +9,7 @@
 		<!-- <relativePath /> lookup parent from repository -->
 	</parent>
 	<artifactId>organization-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<name>Organization Service</name>
 	<description>Ostock Organization Service</description>
 	<properties>
@@ -38,6 +38,11 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.3.0</version>
 		</dependency>
 
 		<dependency>
