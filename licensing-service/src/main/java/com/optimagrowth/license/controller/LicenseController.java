@@ -3,9 +3,13 @@ package com.optimagrowth.license.controller;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import java.util.List;
+import java.util.concurrent.TimeoutException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -16,7 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.optimagrowth.license.model.License;
 import com.optimagrowth.license.service.LicenseService;
+import com.optimagrowth.license.utils.UserContextHolder;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping(value = "v1/organization/{organizationId}/license")
 public class LicenseController {
@@ -46,6 +54,13 @@ public class LicenseController {
                         .withRel("deleteLicense"));
 
         return ResponseEntity.ok(license);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<License>> getLicensesByOrganization(
+            @PathVariable("organizationId") String organizationId) throws TimeoutException {
+        log.debug("LicenseServiceController Correlation id: {}", UserContextHolder.getContext().getCorrelationId());
+        return ResponseEntity.ok(licenseService.getLicensesByOrganization(organizationId));
     }
 
     @PutMapping

@@ -1,6 +1,10 @@
 package com.optimagrowth.license.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +18,12 @@ import com.optimagrowth.license.repository.LicenseRepository;
 import com.optimagrowth.license.service.client.OrganizationDiscoveryClient;
 import com.optimagrowth.license.service.client.OrganizationFeignClient;
 import com.optimagrowth.license.service.client.OrganizationRestTemplateClient;
+import com.optimagrowth.license.utils.UserContextHolder;
 
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -47,6 +56,17 @@ public class LicenseService {
                             licenseId, organizationId));
         }
         return license.withComment(config.getProperty());
+    }
+
+    @CircuitBreaker(name = "licenseService", fallbackMethod = "buildFallbackLicenseList")
+    @RateLimiter(name = "licenseService", fallbackMethod = "buildFallbackLicenseList")
+    @Retry(name = "retryLicenseService", fallbackMethod = "buildFallbackLicenseList")
+    @Bulkhead(name = "bulkheadLicenseService", fallbackMethod = "buildFallbackLicenseList")
+    // @Bulkhead(name = "bulkheadLicenseService", type = Bulkhead.Type.THREADPOOL, fallbackMethod = "buildFallbackLicenseList")
+    public List<License> getLicensesByOrganization(String organizationId) throws TimeoutException {
+        log.debug("getLicensesByOrganization Correlation id: {}", UserContextHolder.getContext().getCorrelationId());
+        randomlyRunLong();
+        return licenseRepository.findByOrganizationId(organizationId);
     }
 
     public License createLicense(License license) {
@@ -111,13 +131,48 @@ public class LicenseService {
                 break;
             case "discovery":
                 log.info("I am using the discovery client");
-                organization = organizationDiscoveryClient.getOrganization(organizationId);
+                // organization = organizationDiscoveryClient.getOrganization(organizationId);
+                organization = getOrganization(organizationId);
                 break;
             default:
-                organization = organizationRestClient.getOrganization(organizationId);
+                // organization = organizationRestClient.getOrganization(organizationId);
+                organization = getOrganization(organizationId);
                 break;
         }
 
         return organization;
+    }
+
+    @CircuitBreaker(name = "organizationService")
+    private Organization getOrganization(String organizationId) {
+        return organizationRestClient.getOrganization(organizationId);
+    }
+
+    // Gives us a one-in-three chance of a database call running long.
+    private void randomlyRunLong() throws TimeoutException {
+        Random rand = new Random();
+        int randomNum = rand.nextInt(3) + 1;
+        if (randomNum == 3)
+            sleep();
+    }
+
+    // Sleeps for 5000 ms (5 s) and then throws a TimeoutException.
+    private void sleep() throws TimeoutException {
+        try {
+            Thread.sleep(5000);
+            throw new java.util.concurrent.TimeoutException();
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private List<License> buildFallbackLicenseList(String organizationId, Throwable t) {
+        List<License> fallbackList = new ArrayList<>();
+        License license = new License();
+        license.setLicenseId("0000000-00-00000");
+        license.setOrganizationId(organizationId);
+        license.setProductName("Sorry no licensing information currently available");
+        fallbackList.add(license);
+        return fallbackList;
     }
 }
