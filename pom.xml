@@ -23,10 +23,11 @@
 	</properties>
 
 	<modules>
-		<module>licensing-service</module>
 		<module>configserver</module>
 		<module>eurekaserver</module>
+		<module>gatewayserver</module>
 		<module>organization-service</module>
+		<module>licensing-service</module>
 	</modules>
 
 	<dependencyManagement>

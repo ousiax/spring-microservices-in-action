@@ -56,8 +56,27 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  gatewayserver:
+    image: ostock/gatewayserver:0.0.1-SNAPSHOT
+    ports:
+       - "8072:8072"
+    environment:
+      SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka/"
+    depends_on:
+      configserver:
+        condition: service_healthy
+    networks:
+      backend:
+        aliases:
+          - "gatewayserver"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8072/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   licensingservice:
-    image: ostock/licensing-service:0.0.9-SNAPSHOT
+    image: ostock/licensing-service:0.0.10-SNAPSHOT
     environment:
       SPRING_PROFILES_ACTIVE: "dev"
       SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
