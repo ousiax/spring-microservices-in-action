@@ -166,6 +166,7 @@ public class LicenseService {
         }
     }
 
+    @SuppressWarnings("unused")
     private List<License> buildFallbackLicenseList(String organizationId, Throwable t) {
         List<License> fallbackList = new ArrayList<>();
         License license = new License();
