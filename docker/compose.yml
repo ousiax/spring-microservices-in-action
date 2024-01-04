@@ -90,7 +90,7 @@ services:
       eurekaserver:
         condition: service_healthy
     ports:
-      - "8080:8080"
+      - "8180:8080"
     networks:
       backend:
         aliases:
@@ -125,7 +125,23 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.3
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    networks:
+      backend:
+        aliases:
+          - "keycloak"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/realms/master || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 networks:
   backend:
     driver: bridge
