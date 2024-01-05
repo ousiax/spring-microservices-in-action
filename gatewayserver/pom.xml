@@ -9,7 +9,7 @@
 		<!-- <relativePath /> lookup parent from repository -->
 	</parent>
 	<artifactId>gatewayserver</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.5-SNAPSHOT</version>
 	<name>API Gateway server</name>
 	<description>API Gateway server</description>
 	<properties></properties>
@@ -29,6 +29,11 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.nimbusds</groupId>
+			<artifactId>nimbus-jose-jwt</artifactId>
+			<version>9.37.3</version>
 		</dependency>
 
 		<dependency>

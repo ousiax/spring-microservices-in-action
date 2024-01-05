@@ -23,7 +23,7 @@ services:
       timeout: 5s
       retries: 5
   configserver:
-    image: ostock/configserver:0.0.2-SNAPSHOT
+    image: ostock/configserver:0.0.3-SNAPSHOT
     ports:
        - "8071:8071"
     environment:
@@ -57,7 +57,7 @@ services:
       timeout: 5s
       retries: 5
   gatewayserver:
-    image: ostock/gatewayserver:0.0.1-SNAPSHOT
+    image: ostock/gatewayserver:0.0.3-SNAPSHOT
     ports:
        - "8072:8072"
     environment:
@@ -76,7 +76,7 @@ services:
       timeout: 5s
       retries: 5
   licensingservice:
-    image: ostock/licensing-service:0.0.10-SNAPSHOT
+    image: ostock/licensing-service:0.0.13-SNAPSHOT
     environment:
       SPRING_PROFILES_ACTIVE: "dev"
       SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
@@ -90,18 +90,18 @@ services:
       eurekaserver:
         condition: service_healthy
     ports:
-      - "8180:8080"
+      - "8083:8083"
     networks:
       backend:
         aliases:
           - "licensing-service"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
   organizationservice:
-    image: ostock/organization-service:0.0.3-SNAPSHOT
+    image: ostock/organization-service:0.0.4-SNAPSHOT
     environment:
       SPRING_PROFILES_ACTIVE: "dev"
       SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
@@ -126,8 +126,12 @@ services:
       timeout: 5s
       retries: 5
   keycloak:
-    image: quay.io/keycloak/keycloak:23.0.3
-    command: start-dev
+    build:
+      context: .
+      dockerfile: Dockerfile.keycloak
+    command:
+      - start-dev
+      - --import-realm
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -137,11 +141,11 @@ services:
       backend:
         aliases:
           - "keycloak"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/realms/master || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -f http://localhost:8080/realms/master || exit 1"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
 networks:
   backend:
     driver: bridge

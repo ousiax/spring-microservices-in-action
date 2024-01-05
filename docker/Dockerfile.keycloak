@@ -1,0 +1,4 @@
+FROM quay.io/keycloak/keycloak:23.0.3
+
+# https://www.keycloak.org/server/importExport
+COPY ./keycloak/data/import /opt/keycloak/data/import

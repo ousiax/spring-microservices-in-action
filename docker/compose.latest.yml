@@ -1,0 +1,12 @@
+version: '2.4'
+services:
+  configserver:
+    image: ostock/configserver:latest
+  eurekaserver:
+    image: ostock/eurekaserver:latest
+  gatewayserver:
+    image: ostock/gatewayserver:latest
+  licensingservice:
+    image: ostock/licensing-service:latest
+  organizationservice:
+    image: ostock/organization-service:latest
