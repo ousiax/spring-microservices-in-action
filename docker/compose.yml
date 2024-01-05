@@ -23,6 +23,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  redis:
+    image: redis:7
+    expose:
+      - 6379
+    mem_limit: 32m    
+    networks:
+      backend:
+        aliases:
+          - "redis"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli PING OK"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   configserver:
     image: ostock/configserver:0.0.3-SNAPSHOT
     ports:
