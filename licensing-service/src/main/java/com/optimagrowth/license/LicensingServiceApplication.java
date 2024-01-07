@@ -1,6 +1,5 @@
 package com.optimagrowth.license;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,8 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestTemplate;
@@ -31,6 +32,15 @@ public class LicensingServiceApplication {
 	}
 
 	// @Bean
+	// Consumer<OrganizationChangeModel> loggerSink() {
+	// 	return orgChange -> {
+	// 		log.debug("Received an {} event for organization id {}",
+	// 				orgChange.getAction(),
+	// 				orgChange.getOrganizationId());
+	// 	};
+	// }
+
+	// @Bean
 	// LocaleResolver localeResolver() {
 	// 	SessionLocaleResolver localeResolver = new SessionLocaleResolver();
 	// 	localeResolver.setDefaultLocale(Locale.US);
@@ -38,11 +48,23 @@ public class LicensingServiceApplication {
 	// }
 
 	@Bean
-	public ResourceBundleMessageSource messageSource() {
+	ResourceBundleMessageSource messageSource() {
 		ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
 		messageSource.setUseCodeAsDefaultMessage(true);
 		messageSource.setBasenames("messages");
 		return messageSource;
+	}
+
+	@Bean
+	LettuceConnectionFactory redisConnectionFactory() {
+		return new LettuceConnectionFactory();
+	}
+
+	@Bean
+	RedisTemplate<String, Object> redisTemplate() {
+		RedisTemplate<String, Object> template = new RedisTemplate<>();
+		template.setConnectionFactory(redisConnectionFactory());
+		return template;
 	}
 
 	@LoadBalanced

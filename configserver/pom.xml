@@ -9,7 +9,7 @@
 		<!-- <relativePath /> lookup parent from repository -->
 	</parent>
 	<artifactId>configserver</artifactId>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>0.0.4-SNAPSHOT</version>
 	<name>Configuration Server</name>
 	<description>Configuration Server</description>
 	<properties>
