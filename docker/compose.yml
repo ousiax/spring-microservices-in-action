@@ -74,7 +74,7 @@ services:
       timeout: 5s
       retries: 5
   gatewayserver:
-    image: ostock/gatewayserver:0.0.3-SNAPSHOT
+    image: ostock/gatewayserver:0.0.5-SNAPSHOT
     ports:
        - "8072:8072"
     mem_limit: 512m
